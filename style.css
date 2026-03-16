@@ -4,58 +4,190 @@
     --bg-blur: 0px;
     --glass-bg: rgba(0, 0, 0, 0.5);
     --text-color: white;
+    --accent-color: #4285F4;
+    --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
 }
 
-/* --- General Body Styling --- */
-body {
+/* --- Background Layer (Fixed) --- */
+#background-layer {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: -1;
     background-image: linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), var(--bg-image);
     background-size: cover;
     background-position: center;
     background-repeat: no-repeat;
-    background-attachment: fixed;
-    backdrop-filter: blur(var(--bg-blur));
+    /* Use filter instead of backdrop-filter to blur the image itself */
+    filter: blur(var(--bg-blur));
+    transform: scale(1.05); /* Slight scale to prevent white edges when blurring */
+    transition: background-image 0.5s ease-in-out;
+}
+
+/* --- General Body Styling --- */
+body {
     margin: 0;
     min-height: 100vh;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start; /* Changed from center to allow scroll flow */
+    padding-top: 10vh; /* Space from top */
+    padding-bottom: 100px; /* Space for settings icon */
     color: var(--text-color);
-    font-family: Arial, sans-serif;
+    font-family: var(--font-family);
     text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
-    transition: background-image 0.5s ease-in-out;
+}
+
+/* --- Dashboard Grid --- */
+#dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    /* Rows will define themselves based on content, but we want Calendar/Stocks on top, News below */
+    gap: 20px;
+    width: 90%;
+    max-width: 1000px; /* Aligns with search bar width mostly */
+    margin-top: 40px;
+    justify-content: center; /* Centers the grid items in the container */
+    margin-left: auto;
+    margin-right: auto;
 }
 
 /* --- Widgets --- */
 .widget-container {
+    min-height: 300px;
+    max-height: 400px; /* Default max height for top row */
+    
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    
     background: var(--glass-bg);
-    padding: 20px;
+    padding: 10px; /* Reduced padding */
     border-radius: 10px;
-    margin: 10px;
+    margin: 0; /* Handled by grid gap */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
     text-align: center;
     backdrop-filter: blur(5px); /* Glass effect for widgets */
+    transition: background 0.3s ease, backdrop-filter 0.3s ease, box-shadow 0.3s ease, transform 0.2s;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.widget-container.transparent-mode {
+    box-shadow: none !important;
+    border: none !important;
+}
+
+/* Liquid Glass Effect Class (toggled by JS) */
+.liquid-glass {
+    /* Overrides background color to be very transparent to show the blur */
+    background: rgba(255, 255, 255, var(--liquid-opacity, 0.05)) !important; 
+    backdrop-filter: blur(25px) saturate(180%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
 }
 
 #time-widget {
-    font-size: 3em;
+    font-size: 3.5em; /* Slightly larger for emphasis */
     font-weight: bold;
+    line-height: 1;
 }
 
 #date-widget {
-    font-size: 1.5em;
-    margin-top: 5px;
+    font-size: 1.2em;
+    font-weight: 500;
+    margin-bottom: 5px; /* Space between date and time */
 }
 
-/* Calendar Link Styling */
-#calendar-link {
-    text-decoration: none;
-    color: inherit;
+/* --- Calendar Widget --- */
+#calendar-widget {
+    width: auto;
+    height: auto;
+    display: flex;
+    flex-direction: column;
+}
+
+.calendar-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    font-weight: bold;
+    font-size: 1.2em;
+}
+
+.calendar-nav {
+    background: transparent;
+    border: none;
+    color: white;
+    cursor: pointer;
+    font-size: 1.2em;
+    padding: 0 10px;
+}
+
+.calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 5px;
+    font-size: 1em; /* Increased font size */
+    flex-grow: 1;   /* Allow grid to take up remaining space */
+    align-content: stretch; /* Stretch rows to fill height */
+    height: 100%;
+}
+
+.calendar-day-name {
+    font-weight: bold;
+    color: rgba(255, 255, 255, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.calendar-day {
+    padding: 0; /* Let flex centering handle it */
+    border-radius: 5px;
+    cursor: pointer;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.calendar-day:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.calendar-day.today {
+    background: var(--accent-color);
+    font-weight: bold;
+}
+
+.calendar-day.empty {
+    cursor: default;
+    pointer-events: none;
+}
+
+/* Calendar Embed (Iframe) */
+#calendar-embed-container {
+    width: 100%;
+    height: 100%;
+    min-height: 300px;
+    border-radius: 5px;
+    overflow: hidden;
+}
+#calendar-embed-container iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
 }
 
 /* --- Search Bar --- */
 #search-container {
     margin-top: 30px;
+    margin-bottom: 20px;
     width: 100%;
     display: flex;
     justify-content: center;
@@ -83,6 +215,31 @@ body {
     background: rgba(255, 255, 255, 0.3);
     width: 500px; /* Slight expand on focus */
     box-shadow: 0 0 15px rgba(0,0,0,0.2);
+}
+
+/* Search Suggestions */
+#search-suggestions {
+    position: absolute;
+    top: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 450px;
+    max-width: 90%;
+    background: rgba(20, 20, 20, 0.95);
+    backdrop-filter: blur(10px);
+    border-radius: 10px;
+    margin-top: 5px;
+    border: 1px solid rgba(255,255,255,0.1);
+    overflow: hidden;
+    z-index: 2000;
+}
+.suggestion-item {
+    padding: 10px 20px;
+    cursor: pointer;
+    text-align: left;
+}
+.suggestion-item:hover {
+    background: rgba(255,255,255,0.1);
 }
 
 /* --- Settings Icon --- */
@@ -139,10 +296,11 @@ body {
 .settings-section h3 {
     margin-top: 0;
     font-size: 1.4em;
-    color: #4285F4; /* Google Blue for titles */
+    color: var(--accent-color);
 }
 
 .setting {
+    position: relative; /* For tooltip anchoring */
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -154,7 +312,6 @@ body {
     flex: 1;
 }
 
-.setting input[type="range"],
 .setting input[type="text"],
 .setting select {
     flex: 1;
@@ -165,7 +322,286 @@ body {
     background: rgba(0,0,0,0.3);
     color: white;
 }
+.setting select {
+    appearance: none;
+    background-image: url("data:image/svg+xml;charset=US-ASCII,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%22292.4%22%20height%3D%22292.4%22%3E%3Cpath%20fill%3D%22%23FFFFFF%22%20d%3D%22M287%2069.4a17.6%2017.6%200%200%200-13-5.4H18.4c-5%200-9.3%201.8-12.9%205.4A17.6%2017.6%200%200%200%200%2082.2c0%205%201.8%209.3%205.4%2012.9l128%20127.9c3.6%203.6%207.8%205.4%2012.8%205.4s9.2-1.8%2012.8-5.4L287%2095c3.5-3.5%205.4-7.8%205.4-12.8%200-5-1.9-9.2-5.5-12.8z%22%2F%3E%3C%2Fsvg%3E");
+    background-repeat: no-repeat;
+    background-position: right .7em top 50%;
+    background-size: .65em auto;
+    padding-right: 1.5em;
+}
 
 .setting input[type="checkbox"] {
     transform: scale(1.5);
+    accent-color: var(--accent-color);
+}
+
+input[type="color"] {
+    -webkit-appearance: none;
+    border: none;
+    width: 40px;
+    height: 25px;
+    border-radius: 5px;
+    padding: 0;
+    cursor: pointer;
+    background-color: transparent;
+}
+input[type="color"]::-webkit-color-swatch-wrapper {
+    padding: 0;
+}
+input[type="color"]::-webkit-color-swatch {
+    border: 1px solid rgba(255,255,255,0.3);
+    border-radius: 5px;
+}
+
+/* --- Background Selector UI --- */
+#bg-selector-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.selector-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.9em;
+    color: #ccc;
+}
+
+#toggle-bg-view {
+    background: transparent;
+    border: 1px solid #aaa;
+    color: white;
+    cursor: pointer;
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: 0.8em;
+}
+
+#bg-list {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding-bottom: 10px; /* Space for the scrollbar */
+    overscroll-behavior-x: contain; /* Prevent horizontal scroll chaining */
+}
+
+/* Expanded Grid View State */
+#bg-list.expanded {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    overflow-x: hidden;
+    overflow-y: auto;
+    max-height: 300px;
+    overscroll-behavior-y: contain; /* Prevent vertical scroll chaining */
+}
+
+.bg-option {
+    min-width: 80px;
+    height: 60px;
+    border-radius: 6px;
+    border: 2px solid rgba(255,255,255,0.1);
+    cursor: pointer;
+    overflow: hidden;
+    position: relative;
+    transition: transform 0.2s, border-color 0.2s;
+    background-size: cover;
+    background-position: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.bg-option:hover {
+    transform: scale(1.05);
+}
+
+.bg-option.selected {
+    border-color: var(--accent-color);
+    box-shadow: 0 0 5px var(--accent-color);
+}
+
+/* The 'Add Custom' button style */
+.bg-option.add-new {
+    background: rgba(255, 255, 255, 0.1);
+    font-size: 24px;
+    color: white;
+}
+
+/* Custom Input Area */
+#custom-bg-input {
+    background: rgba(0,0,0,0.3);
+    padding: 15px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.1);
+    margin-top: 5px;
+}
+
+/* --- Color Swatches --- */
+#widget-color-swatches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 15px;
+    justify-content: flex-start;
+}
+.color-swatch {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: transform 0.2s, border-color 0.2s;
+}
+
+.color-swatch:hover {
+    transform: scale(1.15);
+}
+.color-swatch.selected {
+    border-color: var(--accent-color);
+}
+
+/* --- Background Edit Mode --- */
+#bg-list.edit-mode .bg-option.add-new {
+    display: none; /* Hide '+' button in edit mode */
+}
+
+.delete-btn {
+    position: absolute;
+    top: -5px;
+    right: -5px;
+    width: 20px;
+    height: 20px;
+    background: #f44336;
+    color: white;
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 900;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+}
+
+/* Vertical Stocks Layout */
+.stocks-vertical-layout {
+    width: 100%; 
+    height: 100%; 
+    display: flex; 
+    flex-direction: column; /* Vertical stack */
+    gap: 10px; 
+    overflow-y: auto; /* Scroll downwards */
+    overflow-x: hidden;
+    padding-right: 5px; /* Prevent scrollbar overlap */
+}
+
+#bg-edit-mode-controls button {
+    width: 100%;
+    padding: 8px;
+    margin-top: 10px;
+    background: var(--accent-color);
+    border: none;
+    border-radius: 5px;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+/* --- Help/Info Icons --- */
+.help-icon {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 1px solid #888;
+    color: #888;
+    text-align: center;
+    font-size: 10px;
+    line-height: 14px;
+    cursor: help;
+    position: relative;
+}
+.help-icon:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%; /* Position above the setting line */
+    right: 0; /* Align to the right edge of the setting div */
+    margin-bottom: 5px;
+    background: #000;
+    color: #fff;
+    padding: 8px;
+    border-radius: 5px;
+    width: max-content;
+    max-width: 300px; /* Widened max-width */
+    min-width: 200px; /* Ensure it's not too skinny */
+    font-size: 0.9em;
+    z-index: 100;
+    text-align: left;
+    white-space: normal; /* Allow text wrapping */
+}
+
+/* --- Scrollbar Styling --- */
+
+/* Firefox */
+* {
+    scrollbar-width: thin;
+    scrollbar-color: var(--accent-color) transparent;
+}
+
+/* Webkit (Chrome, Safari) */
+*::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
+}
+
+*::-webkit-scrollbar-track {
+    background: transparent; /* Make track invisible */
+}
+
+*::-webkit-scrollbar-thumb {
+    background-color: var(--accent-color);
+    border-radius: 20px;
+    border: 3px solid rgba(20, 20, 20, 0.8);
+    background-clip: padding-box;
+}
+
+/* --- New Widgets --- */
+#weather-widget {
+    display: flex;
+    align-items: center;
+    gap: 15px;
+    justify-content: center;
+}
+/* Header Weather Styling */
+#header-weather {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 15px; /* Moderate gap between time and weather */
+}
+#weather-icon {
+    width: 50px;
+    height: 50px;
+}
+#news-widget {
+    /* Default state handled by JS classes now, but fallback: */
+    grid-column: 1 / -1; 
+}
+/* Dynamic News States */
+.news-full-width {
+    grid-column: 1 / -1;
+    min-height: 450px;
+}
+.news-half-width {
+    grid-column: span 1;
+    min-height: 300px;
+    max-height: 400px;
+}
+#calendar-widget, #stocks-widget {
+    grid-column: span 1;
 }

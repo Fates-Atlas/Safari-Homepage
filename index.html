@@ -8,22 +8,53 @@
 </head>
 <body>
 
+    <!-- Background Layer (Fixes fixed positioning issues) -->
+    <div id="background-layer"></div>
+
+    <!-- Top Section: Time & Search -->
     <div class="widget-container" id="time-date-container">
         <div id="time-widget"></div>
         <div id="date-widget"></div>
-    </div>
-
-    <div class="widget-container" id="calendar-widget">
-        <h3>Today's Date</h3>
-        <a id="calendar-link" href="#" target="_blank">
-            <div id="calendar-display"></div>
-        </a>
+        <div id="header-weather">
+            <div id="weather-temp" style="font-size: 1.5em; font-weight: bold;">--°</div>
+            <img id="weather-icon" src="" alt="Weather Icon" style="display:none; width: 40px; height: 40px;">
+            <div id="weather-desc">Loading...</div>
+        </div>
     </div>
 
     <div id="search-container">
-        <form action="https://www.google.com/search" method="get">
-            <input type="text" name="q" id="search-input" placeholder="Search Google..." autofocus autocomplete="off">
+        <form action="https://www.google.com/search" method="get" id="search-form">
+            <input type="text" name="q" id="search-input" placeholder="Search..." autofocus autocomplete="off">
+            <div id="search-suggestions" class="hidden"></div>
         </form>
+    </div>
+
+    <!-- Dashboard Grid (Widgets) -->
+    <div id="dashboard-grid">
+        
+        <!-- Calendar Widget (Top Left) -->
+        <div class="widget-container" id="calendar-widget">
+            <div id="calendar-grid-container" style="height: 100%; display: flex; flex-direction: column; width: 100%;">
+                <div class="calendar-header">
+                    <button class="calendar-nav" id="prev-month">&lt;</button>
+                    <span id="calendar-month-year"></span>
+                    <button class="calendar-nav" id="next-month">&gt;</button>
+                </div>
+                <div class="calendar-grid" id="calendar-grid"></div>
+            </div>
+            <div id="calendar-embed-container" class="hidden"></div>
+        </div>
+
+        <!-- Stocks Widget (Top Right) -->
+        <div class="widget-container" id="stocks-widget">
+            <div id="tradingview-widget-container" class="stocks-vertical-layout"></div>
+        </div>
+
+        <!-- News Widget (Bottom Full Width) -->
+        <div class="widget-container" id="news-widget">
+            <iframe id="news-frame" src="about:blank" style="width:100%; height:100%; border:none; border-radius: 5px;"></iframe>
+        </div>
+    
     </div>
 
     <!-- Settings Icon -->
@@ -35,21 +66,93 @@
     <div id="settings-modal" class="hidden">
         <div class="settings-section">
             <h3>Background</h3>
+            
             <div class="setting">
-                <label for="bg-url">Image URL:</label>
-                <input type="text" id="bg-url" placeholder="Paste image link">
+                <label for="accent-color-picker">Accent Color:</label>
+                <input type="color" id="accent-color-picker" value="#4285F4">
             </div>
-            <div class="setting">
+            
+            <div id="bg-selector-container">
+                <div class="selector-header">
+                    <label>Select Image</label>
+                    <button id="toggle-bg-view">Expand</button>
+                </div>
+
+                <div id="bg-list">
+                    <!-- Javascript will populate this -->
+                </div>
+
+                <!-- Hidden Input Area for Custom Image -->
+                <div id="custom-bg-input" class="hidden">
+                    <div class="setting">
+                        <label>Type:</label>
+                        <input type="file" id="file-upload" accept="image/*">
+                    </div>
+                    <div class="setting">
+                        <label>Or URL:</label>
+                        <input type="text" id="custom-url-input" placeholder="Paste link here...">
+                    </div>
+                    <button id="save-custom-bg" style="width:100%; padding: 5px; cursor:pointer; background: #4285F4; color: white; border: none; border-radius: 4px;">Add to Library</button>
+                </div>
+                <div id="bg-edit-mode-controls" class="hidden">
+                    <button id="exit-edit-mode">Done</button>
+                </div>
+            </div>
+            
+            <div class="setting" style="margin-top: 15px;">
                 <label for="bg-blur">Blur:</label>
                 <input type="range" id="bg-blur" min="0" max="20" value="0">
             </div>
         </div>
+        <div style="font-size: 0.7em; color: #888; text-align: center; margin-top: -15px; margin-bottom: 15px;">
+            Max 20 custom images. 
+            <span class="help-icon" data-tooltip="Hold click on an image for 1 second to enter edit mode and delete images.">?</span>
+        </div>
+
 
         <div class="settings-section">
             <h3>Widgets</h3>
+            
+            <div class="setting">
+                <label>Visibility:</label>
+                <div style="flex: 1; display: flex; flex-direction: column; gap: 5px;">
+                    <label style="font-size: 0.9em;"><input type="checkbox" id="toggle-calendar" checked> Calendar</label>
+                    <label style="font-size: 0.9em;"><input type="checkbox" id="toggle-weather"> Weather</label>
+                    <label style="font-size: 0.9em;"><input type="checkbox" id="toggle-stocks"> Stocks</label>
+                    <label style="font-size: 0.9em;"><input type="checkbox" id="toggle-news"> News</label>
+                </div>
+            </div>
+            
+            <div class="setting">
+                <label for="font-family-select">Font:</label>
+                <select id="font-family-select">
+                    <option value="-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif">San Francisco (Default)</option>
+                    <option value="'New York', 'Times New Roman', serif">New York (Serif)</option>
+                    <option value="'Courier New', Courier, monospace">Monospace</option>
+                    <option value="'Arial Rounded MT Bold', Arial, sans-serif">Rounded</option>
+                </select>
+            </div>
+
             <div class="setting">
                 <label for="widget-opacity">Transparency:</label>
                 <input type="range" id="widget-opacity" min="0" max="1" step="0.1" value="0.5">
+            </div>
+            
+            <div class="setting">
+                <label>Theme:</label>
+                <div style="flex: 1; display: flex; align-items: center; gap: 10px;">
+                     <label style="font-size: 0.9em;"><input type="checkbox" id="liquid-glass-toggle"> Liquid Glass</label>
+                </div>
+            </div>
+
+            <div class="setting">
+                <label for="widget-color-picker">Colors:</label>
+                <input type="color" id="widget-color-picker" value="#000000">
+                <input type="color" id="widget-gradient-picker" value="#000000" style="margin-left: 5px;">
+            </div>
+            
+            <div id="widget-color-swatches">
+                <!-- JS will generate swatches here -->
             </div>
         </div>
 
@@ -61,6 +164,8 @@
                     <option value="google">Google</option>
                     <option value="bing">Bing</option>
                     <option value="duckduckgo">DuckDuckGo</option>
+                    <option value="yahoo">Yahoo</option>
+                    <option value="ecosia">Ecosia</option>
                 </select>
             </div>
             <div class="setting">
@@ -71,8 +176,34 @@
                 </select>
             </div>
             <div class="setting">
+                <label for="calendar-mode">Calendar Type:</label>
+                <select id="calendar-mode">
+                    <option value="grid">Simple Grid</option>
+                    <option value="embed">Embed Widget</option>
+                </select>
+            </div>
+            <div class="setting" id="calendar-url-setting">
+                <label for="calendar-url">Embed Code / URL
+                    <span id="calendar-help-icon" class="help-icon" data-tooltip="Paste the HTML embed code from Google Calendar or a public URL.">?</span>
+                </label>
+                <input type="text" id="calendar-url" placeholder="<iframe src='...'> or https://...">
+            </div>
+            
+            <div class="setting">
+                <label for="stock-symbol">Stocks (comma separated):</label>
+                <input type="text" id="stock-symbol" placeholder="AAPL, TSLA, BTCUSD">
+            </div>
+             <div class="setting">
+                <label for="news-url">News URL:</label>
+                <input type="text" id="news-url" placeholder="Embeddable URL...">
+            </div>
+            <div class="setting">
                 <label for="time-format">24-Hour Clock</label>
                 <input type="checkbox" id="time-format">
+            </div>
+            <div class="setting">
+                <label for="temp-unit-toggle">Use Fahrenheit</label>
+                <input type="checkbox" id="temp-unit-toggle">
             </div>
         </div>
     </div>
