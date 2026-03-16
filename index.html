@@ -4,109 +4,79 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Custom Homepage</title>
-    <style>
-        body {
-            /* 1. Custom Image Background */
-            background-image: url('https://picsum.photos'); /* Replace with your image URL */
-            background-size: cover;
-            background-repeat: no-repeat;
-            background-attachment: fixed;
-            color: white;
-            font-family: Arial, sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            margin: 0;
-            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.6);
-        }
-        .widget-container {
-            background: rgba(0, 0, 0, 0.5);
-            padding: 20px;
-            border-radius: 10px;
-            margin: 10px;
-            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-            text-align: center;
-        }
-        /* 2. Time Widget Styling */
-        #time-widget {
-            font-size: 3em;
-            font-weight: bold;
-        }
-        #date-widget {
-            font-size: 1.5em;
-            margin-top: 5px;
-        }
-        /* 4. Google Search Styling */
-        #search-container {
-            margin-top: 20px;
-        }
-        #search-input {
-            padding: 10px;
-            font-size: 1em;
-            border-radius: 5px;
-            border: none;
-            width: 300px;
-            max-width: 80%;
-        }
-        #search-button {
-            padding: 10px;
-            font-size: 1em;
-            border-radius: 5px;
-            border: none;
-            cursor: pointer;
-            background-color: #4285F4;
-            color: white;
-            margin-left: 5px;
-        }
-    </style>
+    <link rel="stylesheet" href="style.css">
 </head>
 <body>
 
     <div class="widget-container" id="time-date-container">
-        <!-- Time and Date will be inserted here by JavaScript -->
         <div id="time-widget"></div>
         <div id="date-widget"></div>
     </div>
 
-    <!-- 3. Calendar Widget (Basic HTML/JS implementation) -->
     <div class="widget-container" id="calendar-widget">
         <h3>Today's Date</h3>
-        <div id="calendar-display"></div>
+        <a id="calendar-link" href="#" target="_blank">
+            <div id="calendar-display"></div>
+        </a>
     </div>
 
-    <!-- 4. Google Search -->
     <div id="search-container">
-        <form action="https://www.google.com" method="get" target="_blank">
-            <input type="text" name="q" id="search-input" placeholder="Google search...">
-            <button type="submit" id="search-button">Search</button>
+        <form action="https://www.google.com/search" method="get">
+            <input type="text" name="q" id="search-input" placeholder="Search Google..." autofocus autocomplete="off">
         </form>
     </div>
 
-    <script>
-        // JavaScript for Time and Date Widget
-        function updateTimeAndDate() {
-            const now = new Date();
-            const timeString = now.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
-            const dateString = now.toLocaleDateString([], { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' });
+    <!-- Settings Icon -->
+    <div id="settings-icon">
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="white" width="28px" height="28px"><path d="M19.14,12.94c0.04-0.3,0.06-0.61,0.06-0.94c0-0.32-0.02-0.64-0.07-0.94l2.03-1.58c0.18-0.14,0.23-0.41,0.12-0.61 l-1.92-3.32c-0.12-0.22-0.37-0.29-0.59-0.22l-2.39,0.96c-0.5-0.38-1.03-0.69-1.62-0.92L14.4,2.27C14.38,2.04,14.17,1.88,13.92,1.88h-3.84 c-0.25,0-0.46,0.16-0.48,0.39L9.19,4.63c-0.59,0.23-1.12,0.54-1.62,0.92L5.18,4.57C4.95,4.49,4.7,4.56,4.59,4.78L2.67,8.1 c-0.11,0.2-0.06,0.47,0.12,0.61l2.03,1.58C4.74,10.72,4.73,11.04,4.73,11.35c0,0.31,0.01,0.63,0.06,0.94l-2.03,1.58 c-0.18,0.14-0.23,0.41-0.12,0.61l1.92,3.32c0.12,0.22,0.37,0.29,0.59,0.22l2.39-0.96c0.5,0.38,1.03,0.69,1.62,0.92L9.6,21.73 c0.02,0.23,0.23,0.39,0.48,0.39h3.84c0.25,0,0.46-0.16,0.48-0.39l0.39-2.36c0.59-0.23,1.12-0.54,1.62-0.92l2.39,0.96 c0.22,0.08,0.47,0.01,0.59-0.22l1.92-3.32c0.11-0.2,0.06-0.47-0.12-0.61L19.14,12.94z M12,15.6c-1.98,0-3.6-1.62-3.6-3.6 s1.62-3.6,3.6-3.6s3.6,1.62,3.6,3.6S13.98,15.6,12,15.6z"/></svg>
+    </div>
 
-            document.getElementById('time-widget').textContent = timeString;
-            document.getElementById('date-widget').textContent = dateString;
-        }
-        // Update every second
-        setInterval(updateTimeAndDate, 1000);
-        // Initial call
-        updateTimeAndDate();
+    <!-- Settings Panel (Hidden by default) -->
+    <div id="settings-modal" class="hidden">
+        <div class="settings-section">
+            <h3>Background</h3>
+            <div class="setting">
+                <label for="bg-url">Image URL:</label>
+                <input type="text" id="bg-url" placeholder="Paste image link">
+            </div>
+            <div class="setting">
+                <label for="bg-blur">Blur:</label>
+                <input type="range" id="bg-blur" min="0" max="20" value="0">
+            </div>
+        </div>
 
-        // JavaScript for Basic Calendar Display (today's date only for simplicity)
-        function displayCalendar() {
-            const now = new Date();
-            const calendarDisplay = document.getElementById('calendar-display');
-            calendarDisplay.textContent = now.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
-        }
-        displayCalendar();
-    </script>
+        <div class="settings-section">
+            <h3>Widgets</h3>
+            <div class="setting">
+                <label for="widget-opacity">Transparency:</label>
+                <input type="range" id="widget-opacity" min="0" max="1" step="0.1" value="0.5">
+            </div>
+        </div>
 
+        <div class="settings-section">
+            <h3>Preferences</h3>
+            <div class="setting">
+                <label for="search-engine">Search Engine:</label>
+                <select id="search-engine">
+                    <option value="google">Google</option>
+                    <option value="bing">Bing</option>
+                    <option value="duckduckgo">DuckDuckGo</option>
+                </select>
+            </div>
+            <div class="setting">
+                <label for="calendar-provider">Calendar:</label>
+                <select id="calendar-provider">
+                    <option value="apple">Apple Calendar</option>
+                    <option value="google">Google Calendar</option>
+                </select>
+            </div>
+            <div class="setting">
+                <label for="time-format">24-Hour Clock</label>
+                <input type="checkbox" id="time-format">
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
 </body>
 </html>
