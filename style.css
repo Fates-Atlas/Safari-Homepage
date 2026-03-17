@@ -66,7 +66,7 @@ body {
     justify-content: center;
     
     background: var(--glass-bg);
-    padding: 10px; /* Reduced padding */
+    padding: 15px 25px; /* Compact padding but wider horizontally */
     border-radius: 10px;
     margin: 0; /* Handled by grid gap */
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
@@ -91,15 +91,18 @@ body {
 }
 
 #time-widget {
-    font-size: 3.5em; /* Slightly larger for emphasis */
+    font-size: 3em;
     font-weight: bold;
     line-height: 1;
 }
 
 #date-widget {
-    font-size: 1.2em;
+    font-size: 1.1em;
     font-weight: 500;
-    margin-bottom: 5px; /* Space between date and time */
+    margin-bottom: 2px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    opacity: 0.8;
 }
 
 /* --- Calendar Widget --- */
@@ -582,7 +585,7 @@ input[type="color"]::-webkit-color-swatch {
     display: flex;
     align-items: center;
     gap: 10px;
-    margin-top: 15px; /* Moderate gap between time and weather */
+    margin-top: 10px; /* Moderate gap between time and weather */
 }
 #weather-icon {
     width: 50px;

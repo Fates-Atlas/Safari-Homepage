@@ -610,7 +610,10 @@ document.addEventListener('DOMContentLoaded', () => {
             option.style.backgroundImage = formattedSrc;
 
             // Highlight if selected
-            if (settings.bgImage === formattedSrc) {
+            const normSettingsBg = settings.bgImage.replace(/["']/g, "");
+            const normFormattedSrc = formattedSrc.replace(/["']/g, "");
+            
+            if (normSettingsBg === normFormattedSrc) {
                 option.classList.add('selected');
             }
 
