@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- DOM Element References ---
     const timeWidget = document.getElementById('time-widget');
     const dateWidget = document.getElementById('date-widget');
+    const timeDateContainer = document.getElementById('time-date-container');
     const calendarGrid = document.getElementById('calendar-grid');
     const calendarMonthYear = document.getElementById('calendar-month-year');
     const calendarGridContainer = document.getElementById('calendar-grid-container');
@@ -42,6 +43,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const widgetColorSwatches = document.getElementById('widget-color-swatches');
     const fontFamilySelect = document.getElementById('font-family-select');
     const timeColorPicker = document.getElementById('time-color-picker');
+    const timeColorMidPicker = document.getElementById('time-color-mid-picker');
+    const timeColorEndPicker = document.getElementById('time-color-end-picker');
+    const widgetColorMidPicker = document.getElementById('widget-color-mid-picker');
+    const timeGradientToggle = document.getElementById('time-gradient-toggle');
+    const timeLiquidToggle = document.getElementById('time-liquid-toggle');
+    const clockScaleInput = document.getElementById('clock-scale-slider');
     
     // Toggle Inputs
     const toggleCalendar = document.getElementById('toggle-calendar');
@@ -76,7 +83,13 @@ document.addEventListener('DOMContentLoaded', () => {
         accentColor: '#4285F4',
         widgetColor: '#000000', // Default widget background color
         widgetGradientColor: '#000000',
+        widgetColorMid: '#000000',
         timeColor: '#ffffff',
+        timeColorMid: '#ffffff',
+        timeColorEnd: '#ffffff',
+        isTimeGradient: false,
+        isTimeLiquid: false,
+        clockScale: '1',
         fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
         isLiquidGlass: false,
         is24Hour: false,
@@ -210,7 +223,32 @@ document.addEventListener('DOMContentLoaded', () => {
         document.documentElement.style.setProperty('--accent-color', settings.accentColor);
         document.documentElement.style.setProperty('--font-family', settings.fontFamily);
         document.documentElement.style.setProperty('--time-color', settings.timeColor);
+        document.documentElement.style.setProperty('--clock-scale', settings.clockScale);
         
+        // --- Clock Styling ---
+        if (settings.isTimeLiquid) {
+            timeDateContainer.classList.add('liquid-glass-clock');
+        } else {
+            timeDateContainer.classList.remove('liquid-glass-clock');
+        }
+
+        const clockElements = [timeWidget, dateWidget, headerWeather];
+        if (settings.isTimeGradient) {
+            const gradientStyle = `linear-gradient(to right, ${settings.timeColor}, ${settings.timeColorMid}, ${settings.timeColorEnd})`;
+            clockElements.forEach(el => {
+                el.style.backgroundImage = gradientStyle;
+                el.style.webkitBackgroundClip = 'text';
+                el.style.webkitTextFillColor = 'transparent';
+            });
+        } else {
+            clockElements.forEach(el => {
+                el.style.backgroundImage = 'none';
+                el.style.webkitBackgroundClip = 'initial';
+                el.style.webkitTextFillColor = 'initial';
+                el.style.color = ''; // Inherit from container
+            });
+        }
+
         // Widgets
         const widgets = document.querySelectorAll('.widget-container');
         
@@ -232,14 +270,14 @@ document.addEventListener('DOMContentLoaded', () => {
             // Handle Colors & Gradients
             const rgbColor = hexToRgb(settings.widgetColor);
             const rgbGradient = hexToRgb(settings.widgetGradientColor);
+            const rgbMid = hexToRgb(settings.widgetColorMid || settings.widgetColor);
             
             if (rgbColor) {
                 let bgValue;
-                if (settings.widgetGradientColor && settings.widgetGradientColor !== settings.widgetColor) {
-                    bgValue = `linear-gradient(135deg, rgba(${rgbColor}, ${settings.widgetOpacity}), rgba(${rgbGradient}, ${settings.widgetOpacity}))`;
-                } else {
-                    bgValue = `rgba(${rgbColor}, ${settings.widgetOpacity})`;
-                }
+                bgValue = `linear-gradient(135deg, 
+                    rgba(${rgbColor}, ${settings.widgetOpacity}), 
+                    rgba(${rgbMid}, ${settings.widgetOpacity}), 
+                    rgba(${rgbGradient}, ${settings.widgetOpacity}))`;
                 document.documentElement.style.setProperty('--glass-bg', bgValue);
             }
         }
@@ -374,6 +412,14 @@ document.addEventListener('DOMContentLoaded', () => {
         widgetColorPicker.value = settings.widgetColor;
         accentColorPicker.value = settings.accentColor;
         timeColorPicker.value = settings.timeColor;
+        
+        timeColorMidPicker.value = settings.timeColorMid || settings.timeColor;
+        timeColorEndPicker.value = settings.timeColorEnd || settings.timeColor;
+        widgetColorMidPicker.value = settings.widgetColorMid || settings.widgetColor;
+        timeGradientToggle.checked = settings.isTimeGradient;
+        clockScaleInput.value = settings.clockScale || 1;
+        timeLiquidToggle.checked = settings.isTimeLiquid;
+
         widgetGradientPicker.value = settings.widgetGradientColor || settings.widgetColor;
         liquidGlassToggle.checked = settings.isLiquidGlass;
         timeFormatCheckbox.checked = settings.is24Hour;
@@ -572,9 +618,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 settings.widgetColor = color;
                 // If using solid color, sync gradient too so it's solid
                 settings.widgetGradientColor = color;
+                settings.widgetColorMid = color;
                 
                 widgetColorPicker.value = color; // Sync color wheel
                 widgetGradientPicker.value = color;
+                widgetColorMidPicker.value = color;
                 saveSettings();
                 renderColorSwatches(); // Re-render to update selection
             });
@@ -806,8 +854,16 @@ document.addEventListener('DOMContentLoaded', () => {
         saveSettings();
         renderColorSwatches(); // Re-render to update selection on swatches
     });
+    widgetColorMidPicker.addEventListener('input', (e) => { settings.widgetColorMid = e.target.value; saveSettings(); });
     accentColorPicker.addEventListener('input', (e) => { settings.accentColor = e.target.value; saveSettings(); });
+    
     timeColorPicker.addEventListener('input', (e) => { settings.timeColor = e.target.value; saveSettings(); });
+    timeColorMidPicker.addEventListener('input', (e) => { settings.timeColorMid = e.target.value; saveSettings(); });
+    timeColorEndPicker.addEventListener('input', (e) => { settings.timeColorEnd = e.target.value; saveSettings(); });
+    timeGradientToggle.addEventListener('change', (e) => { settings.isTimeGradient = e.target.checked; saveSettings(); });
+    timeLiquidToggle.addEventListener('change', (e) => { settings.isTimeLiquid = e.target.checked; saveSettings(); });
+    clockScaleInput.addEventListener('input', (e) => { settings.clockScale = e.target.value; saveSettings(); });
+    
     widgetGradientPicker.addEventListener('input', (e) => {
         settings.widgetGradientColor = e.target.value;
         saveSettings();

@@ -33,8 +33,8 @@ body {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-start; /* Changed from center to allow scroll flow */
-    padding-top: 10vh; /* Space from top */
+    justify-content: flex-start;
+    padding-top: calc(10vh + 200px); /* Shifted down 200px */
     padding-bottom: 100px; /* Space for settings icon */
     color: var(--text-color);
     font-family: var(--font-family);
@@ -90,6 +90,16 @@ body {
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
 }
 
+/* Liquid Glass Effect for Clock */
+.liquid-glass-clock {
+    background: rgba(255, 255, 255, var(--liquid-opacity, 0.05));
+    backdrop-filter: blur(25px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+    padding: 20px 40px;
+    border-radius: 20px;
+}
+
 /* --- Time & Date Section (No Background) --- */
 #time-date-container {
     display: flex;
@@ -98,6 +108,8 @@ body {
     justify-content: center;
     color: var(--time-color);
     margin-bottom: 20px;
+    font-size: calc(1rem * var(--clock-scale, 1)); /* Scales everything inside */
+    transition: all 0.3s ease;
 }
 
 #time-widget {
@@ -293,7 +305,7 @@ body {
 
 /* Utility class to hide elements */
 .hidden {
-    display: none;
+    display: none !important;
 }
 
 /* --- Styles for inside the settings modal (placeholders) --- */
@@ -599,8 +611,9 @@ input[type="color"]::-webkit-color-swatch {
     margin-top: 10px; /* Moderate gap between time and weather */
 }
 #weather-icon {
-    width: 50px;
-    height: 50px;
+    /* Use em so it scales with the font-size of the container */
+    width: 2.5em !important;
+    height: 2.5em !important;
 }
 #news-widget {
     /* Default state handled by JS classes now, but fallback: */

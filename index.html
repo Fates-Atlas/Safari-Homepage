@@ -109,6 +109,31 @@
             <span class="help-icon" data-tooltip="Hold click on an image for 1 second to enter edit mode and delete images.">?</span>
         </div>
 
+        <div class="settings-section">
+            <h3>Clock</h3>
+            <div class="setting">
+                <label for="time-color-picker">Color Gradient:</label>
+                <input type="color" id="time-color-picker" value="#ffffff">
+                <input type="color" id="time-color-mid-picker" value="#ffffff" style="margin-left: 5px;">
+                <input type="color" id="time-color-end-picker" value="#ffffff" style="margin-left: 5px;">
+            </div>
+            <div class="setting">
+                <label for="time-gradient-toggle">Enable Gradient</label>
+                <input type="checkbox" id="time-gradient-toggle">
+            </div>
+            <div class="setting">
+                <label for="time-liquid-toggle">Liquid Glass Background</label>
+                <input type="checkbox" id="time-liquid-toggle">
+            </div>
+            <div class="setting">
+                <label for="clock-scale-slider">Size</label>
+                <input type="range" id="clock-scale-slider" min="0.5" max="3" step="0.1" value="1">
+            </div>
+            <div class="setting">
+                 <label for="time-format">24-Hour Clock</label>
+                 <input type="checkbox" id="time-format">
+            </div>
+        </div>
 
         <div class="settings-section">
             <h3>Widgets</h3>
@@ -134,11 +159,6 @@
             </div>
 
             <div class="setting">
-                <label for="time-color-picker">Clock Color:</label>
-                <input type="color" id="time-color-picker" value="#ffffff">
-            </div>
-
-            <div class="setting">
                 <label for="widget-opacity">Transparency:</label>
                 <input type="range" id="widget-opacity" min="0" max="1" step="0.1" value="0.5">
             </div>
@@ -151,8 +171,9 @@
             </div>
 
             <div class="setting">
-                <label for="widget-color-picker">Colors:</label>
+                <label for="widget-color-picker">Gradient Colors:</label>
                 <input type="color" id="widget-color-picker" value="#000000">
+                <input type="color" id="widget-color-mid-picker" value="#000000" style="margin-left: 5px;">
                 <input type="color" id="widget-gradient-picker" value="#000000" style="margin-left: 5px;">
             </div>
             
@@ -201,10 +222,6 @@
              <div class="setting">
                 <label for="news-url">News URL:</label>
                 <input type="text" id="news-url" placeholder="Embeddable URL...">
-            </div>
-            <div class="setting">
-                <label for="time-format">24-Hour Clock</label>
-                <input type="checkbox" id="time-format">
             </div>
             <div class="setting">
                 <label for="temp-unit-toggle">Use Celsius</label>
