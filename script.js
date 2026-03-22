@@ -41,6 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const liquidGlassToggle = document.getElementById('liquid-glass-toggle');
     const widgetColorSwatches = document.getElementById('widget-color-swatches');
     const fontFamilySelect = document.getElementById('font-family-select');
+    const timeColorPicker = document.getElementById('time-color-picker');
     
     // Toggle Inputs
     const toggleCalendar = document.getElementById('toggle-calendar');
@@ -75,6 +76,7 @@ document.addEventListener('DOMContentLoaded', () => {
         accentColor: '#4285F4',
         widgetColor: '#000000', // Default widget background color
         widgetGradientColor: '#000000',
+        timeColor: '#ffffff',
         fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
         isLiquidGlass: false,
         is24Hour: false,
@@ -82,13 +84,13 @@ document.addEventListener('DOMContentLoaded', () => {
         calendarProvider: 'apple',
         calendarMode: 'grid', // 'grid' or 'embed'
         calendarUrl: '',
-        tempUnit: 'celsius',
+        tempUnit: 'fahrenheit',
         stockSymbol: 'AAPL',
         newsUrl: '',
         showCalendar: true,
-        showWeather: false,
-        showStocks: false,
-        showNews: false,
+        showWeather: true,
+        showStocks: true,
+        showNews: true,
         customImages: [],
     };
 
@@ -200,9 +202,14 @@ document.addEventListener('DOMContentLoaded', () => {
         const bgLayer = document.getElementById('background-layer');
         bgLayer.style.backgroundImage = `linear-gradient(rgba(0,0,0,0.3), rgba(0,0,0,0.3)), ${settings.bgImage}`;
         bgLayer.style.filter = `blur(${settings.bgBlur}px)`;
+
+        // Only scale if blurred to prevent white edges; otherwise show full image
+        const scaleValue = parseInt(settings.bgBlur) > 0 ? 1.05 : 1;
+        bgLayer.style.transform = `scale(${scaleValue})`;
         
         document.documentElement.style.setProperty('--accent-color', settings.accentColor);
         document.documentElement.style.setProperty('--font-family', settings.fontFamily);
+        document.documentElement.style.setProperty('--time-color', settings.timeColor);
         
         // Widgets
         const widgets = document.querySelectorAll('.widget-container');
@@ -264,7 +271,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // Toggles
         calendarWidget.classList.toggle('hidden', !settings.showCalendar);
-        weatherWidget.classList.toggle('hidden', !settings.showWeather);
+        headerWeather.classList.toggle('hidden', !settings.showWeather);
         stocksWidget.classList.toggle('hidden', !settings.showStocks);
         newsWidget.classList.toggle('hidden', !settings.showNews);
 
@@ -366,6 +373,7 @@ document.addEventListener('DOMContentLoaded', () => {
         widgetOpacityInput.value = settings.widgetOpacity;
         widgetColorPicker.value = settings.widgetColor;
         accentColorPicker.value = settings.accentColor;
+        timeColorPicker.value = settings.timeColor;
         widgetGradientPicker.value = settings.widgetGradientColor || settings.widgetColor;
         liquidGlassToggle.checked = settings.isLiquidGlass;
         timeFormatCheckbox.checked = settings.is24Hour;
@@ -382,7 +390,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         stockSymbolInput.value = settings.stockSymbol;
         newsUrlInput.value = settings.newsUrl;
-        tempUnitToggle.checked = settings.tempUnit === 'fahrenheit';
+        tempUnitToggle.checked = settings.tempUnit === 'celsius';
         
         updateCalendarHelpTooltip();
     }
@@ -426,7 +434,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const unitToUse = settings.tempUnit || defaultUnit;
             if (!settings.tempUnit) { // Save the default if not set
                 settings.tempUnit = unitToUse;
-                tempUnitToggle.checked = (unitToUse === 'fahrenheit');
+                tempUnitToggle.checked = (unitToUse === 'celsius');
             }
 
             const cupertino = { lat: 37.33, lon: -122.01 };
@@ -764,14 +772,18 @@ document.addEventListener('DOMContentLoaded', () => {
     const MAX_CUSTOM_IMAGES = 20; // Set a reasonable limit for stored images
 
     function addCustomImage(imageStr) {
-        // Add to list if not already there
+        // Add to list or move to top if already exists
         if (!settings.customImages.includes(imageStr)) {
             // Enforce the cap: show error if limit is reached
             if (settings.customImages.length >= MAX_CUSTOM_IMAGES) {
                 alert(`Error: Maximum of ${MAX_CUSTOM_IMAGES} custom images reached. Please delete an existing image to add a new one.`);
                 return; // Stop execution
             }
-            settings.customImages.unshift(imageStr); // Add to start
+            settings.customImages.unshift(imageStr);
+        } else {
+            // Move existing image to the beginning of the list
+            settings.customImages = settings.customImages.filter(img => img !== imageStr);
+            settings.customImages.unshift(imageStr);
         }
         
         // Set as current
@@ -782,8 +794,8 @@ document.addEventListener('DOMContentLoaded', () => {
         fileUploadInput.value = '';
         customBgInputContainer.classList.add('hidden');
 
-        saveSettings();
         renderBackgroundList();
+        saveSettings();
     }
 
     // --- Event Listeners for Inputs ---
@@ -795,13 +807,14 @@ document.addEventListener('DOMContentLoaded', () => {
         renderColorSwatches(); // Re-render to update selection on swatches
     });
     accentColorPicker.addEventListener('input', (e) => { settings.accentColor = e.target.value; saveSettings(); });
+    timeColorPicker.addEventListener('input', (e) => { settings.timeColor = e.target.value; saveSettings(); });
     widgetGradientPicker.addEventListener('input', (e) => {
         settings.widgetGradientColor = e.target.value;
         saveSettings();
     });
     liquidGlassToggle.addEventListener('change', (e) => { settings.isLiquidGlass = e.target.checked; saveSettings(); });
     timeFormatCheckbox.addEventListener('change', (e) => { settings.is24Hour = e.target.checked; saveSettings(); });
-    tempUnitToggle.addEventListener('change', (e) => { settings.tempUnit = e.target.checked ? 'fahrenheit' : 'celsius'; updateWeatherWidget(); saveSettings(); });
+    tempUnitToggle.addEventListener('change', (e) => { settings.tempUnit = e.target.checked ? 'celsius' : 'fahrenheit'; updateWeatherWidget(); saveSettings(); });
     searchEngineSelect.addEventListener('change', (e) => { settings.searchEngine = e.target.value; saveSettings(); });
     calendarProviderSelect.addEventListener('change', (e) => {
         settings.calendarProvider = e.target.value;

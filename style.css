@@ -6,6 +6,7 @@
     --text-color: white;
     --accent-color: #4285F4;
     --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    --time-color: #ffffff;
 }
 
 /* --- Background Layer (Fixed) --- */
@@ -22,8 +23,7 @@
     background-repeat: no-repeat;
     /* Use filter instead of backdrop-filter to blur the image itself */
     filter: blur(var(--bg-blur));
-    transform: scale(1.05); /* Slight scale to prevent white edges when blurring */
-    transition: background-image 0.5s ease-in-out;
+    transition: background-image 0.5s ease-in-out, transform 0.5s ease-in-out;
 }
 
 /* --- General Body Styling --- */
@@ -88,6 +88,16 @@ body {
     backdrop-filter: blur(25px) saturate(180%) !important;
     border: 1px solid rgba(255, 255, 255, 0.2);
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+}
+
+/* --- Time & Date Section (No Background) --- */
+#time-date-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    color: var(--time-color);
+    margin-bottom: 20px;
 }
 
 #time-widget {
@@ -278,6 +288,7 @@ body {
     z-index: 1000;
     padding: 25px;
     color: white;
+    overscroll-behavior: contain;
 }
 
 /* Utility class to hide elements */
