@@ -49,6 +49,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const timeGradientToggle = document.getElementById('time-gradient-toggle');
     const timeLiquidToggle = document.getElementById('time-liquid-toggle');
     const clockScaleInput = document.getElementById('clock-scale-slider');
+    const clockLiquidOpacityInput = document.getElementById('clock-liquid-opacity');
     
     // Toggle Inputs
     const toggleCalendar = document.getElementById('toggle-calendar');
@@ -90,6 +91,7 @@ document.addEventListener('DOMContentLoaded', () => {
         isTimeGradient: false,
         isTimeLiquid: false,
         clockScale: '1',
+        clockLiquidOpacity: '0.5',
         fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
         isLiquidGlass: false,
         is24Hour: false,
@@ -225,6 +227,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.documentElement.style.setProperty('--time-color', settings.timeColor);
         document.documentElement.style.setProperty('--clock-scale', settings.clockScale);
         
+        document.documentElement.style.setProperty('--clock-liquid-opacity', Math.max(0.05, (settings.clockLiquidOpacity || 0.5) * 0.5));
         // --- Clock Styling ---
         if (settings.isTimeLiquid) {
             timeDateContainer.classList.add('liquid-glass-clock');
@@ -312,6 +315,21 @@ document.addEventListener('DOMContentLoaded', () => {
         headerWeather.classList.toggle('hidden', !settings.showWeather);
         stocksWidget.classList.toggle('hidden', !settings.showStocks);
         newsWidget.classList.toggle('hidden', !settings.showNews);
+
+        // Dynamic Layout Logic for News Widget
+        newsWidget.classList.remove('news-half-width', 'news-solo-mode');
+        
+        if (settings.showNews) {
+            if (settings.showCalendar && settings.showStocks) {
+                // Default: Both top widgets active -> News is bottom, full width (handled by CSS default)
+            } else if (settings.showCalendar || settings.showStocks) {
+                // Exactly one top widget active -> News moves to the empty slot (half width)
+                newsWidget.classList.add('news-half-width');
+            } else {
+                // No top widgets -> News is solo, double height
+                newsWidget.classList.add('news-solo-mode');
+            }
+        }
 
         // Update Calendar Mode
         if (settings.showCalendar) {
@@ -419,6 +437,7 @@ document.addEventListener('DOMContentLoaded', () => {
         timeGradientToggle.checked = settings.isTimeGradient;
         clockScaleInput.value = settings.clockScale || 1;
         timeLiquidToggle.checked = settings.isTimeLiquid;
+        clockLiquidOpacityInput.value = settings.clockLiquidOpacity || 0.5;
 
         widgetGradientPicker.value = settings.widgetGradientColor || settings.widgetColor;
         liquidGlassToggle.checked = settings.isLiquidGlass;
@@ -863,6 +882,7 @@ document.addEventListener('DOMContentLoaded', () => {
     timeGradientToggle.addEventListener('change', (e) => { settings.isTimeGradient = e.target.checked; saveSettings(); });
     timeLiquidToggle.addEventListener('change', (e) => { settings.isTimeLiquid = e.target.checked; saveSettings(); });
     clockScaleInput.addEventListener('input', (e) => { settings.clockScale = e.target.value; saveSettings(); });
+    clockLiquidOpacityInput.addEventListener('input', (e) => { settings.clockLiquidOpacity = e.target.value; saveSettings(); });
     
     widgetGradientPicker.addEventListener('input', (e) => {
         settings.widgetGradientColor = e.target.value;

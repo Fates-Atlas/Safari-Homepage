@@ -34,7 +34,7 @@ body {
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
-    padding-top: calc(10vh + 200px); /* Shifted down 200px */
+    padding-top: calc(10vh + 150px); /* Shifted down 150px */
     padding-bottom: 100px; /* Space for settings icon */
     color: var(--text-color);
     font-family: var(--font-family);
@@ -92,12 +92,15 @@ body {
 
 /* Liquid Glass Effect for Clock */
 .liquid-glass-clock {
-    background: rgba(255, 255, 255, var(--liquid-opacity, 0.05));
-    backdrop-filter: blur(25px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.2);
-    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
+    background: rgba(255, 255, 255, var(--clock-liquid-opacity, 0.05));
+    backdrop-filter: blur(40px) saturate(180%); /* Increased blur/saturation for Apple look */
+    -webkit-backdrop-filter: blur(40px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.15);
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
     padding: 20px 40px;
     border-radius: 20px;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle text shadow for legibility */
+    font-weight: 500; /* Slightly cleaner weight inside glass */
 }
 
 /* --- Time & Date Section (No Background) --- */
@@ -615,19 +618,25 @@ input[type="color"]::-webkit-color-swatch {
     width: 2.5em !important;
     height: 2.5em !important;
 }
+
 #news-widget {
-    /* Default state handled by JS classes now, but fallback: */
+    /* Default State: Bottom row, full width */
     grid-column: 1 / -1; 
+    min-height: 600px;
+    max-height: none;
 }
-/* Dynamic News States */
-.news-full-width {
-    grid-column: 1 / -1;
-    min-height: 450px;
-}
-.news-half-width {
+
+/* Dynamic State: Half width (sits next to Calendar or Stocks) */
+#news-widget.news-half-width {
     grid-column: span 1;
     min-height: 300px;
     max-height: 400px;
+}
+
+/* Dynamic State: Solo (Double Height) */
+#news-widget.news-solo-mode {
+    grid-column: 1 / -1;
+    min-height: 600px;
 }
 #calendar-widget, #stocks-widget {
     grid-column: span 1;
