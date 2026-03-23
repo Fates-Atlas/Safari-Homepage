@@ -1,4 +1,4 @@
-# Safari-Homepage
+# Homepage
 
 A highly customizable, privacy-focused start page designed to replace the default Safari homepage (though it works great in Chrome and Firefox too). I built this because I wasn't satisfied with the default start page options and wanted a personalized dashboard with widgets, dynamic backgrounds, and essential tools.
 
@@ -104,7 +104,7 @@ To display your actual Google Calendar events inside the widget:
 1.  Open **Settings** > **Preferences**.
 2.  Paste a URL into the **Website URL** field.
 
-> **Pro Tip:** You can do a lot with this feature including embedding a Google Doc/Sheet filled with links for quick access to your important information/websites
+> **Pro Tip:** You can do a lot with this feature including embedding a Google Doc/Sheet filled with links for quick access to your important information/websites.
 
 ## Built With:
 * **Frontend**: HTML5, CSS3 (Custom Properties/Variables), Vanilla JavaScript
