@@ -30,26 +30,32 @@ document.addEventListener('DOMContentLoaded', () => {
     const bgBlurInput = document.getElementById('bg-blur');
     const widgetOpacityInput = document.getElementById('widget-opacity');
     const searchEngineSelect = document.getElementById('search-engine');
-    const calendarProviderSelect = document.getElementById('calendar-provider');
     const timeFormatCheckbox = document.getElementById('time-format');
-    const calendarUrlInput = document.getElementById('calendar-url');
+    
+    // Calendar Inputs
+    const calendarListContainer = document.getElementById('calendar-list');
+    const addCalendarBtn = document.getElementById('add-calendar-btn');
+    const addCalendarForm = document.getElementById('add-calendar-form');
+    
     const tempUnitToggle = document.getElementById('temp-unit-toggle');
-    const calendarModeSelect = document.getElementById('calendar-mode');
     const calendarHelpIcon = document.getElementById('calendar-help-icon');
     const accentColorPicker = document.getElementById('accent-color-picker');
     const widgetColorPicker = document.getElementById('widget-color-picker');
+    const widgetSolidColorPicker = document.getElementById('widget-solid-color-picker');
     const widgetGradientPicker = document.getElementById('widget-gradient-picker');
     const liquidGlassToggle = document.getElementById('liquid-glass-toggle');
-    const widgetColorSwatches = document.getElementById('widget-color-swatches');
     const fontFamilySelect = document.getElementById('font-family-select');
     const timeColorPicker = document.getElementById('time-color-picker');
     const timeColorMidPicker = document.getElementById('time-color-mid-picker');
     const timeColorEndPicker = document.getElementById('time-color-end-picker');
     const widgetColorMidPicker = document.getElementById('widget-color-mid-picker');
     const timeGradientToggle = document.getElementById('time-gradient-toggle');
-    const timeLiquidToggle = document.getElementById('time-liquid-toggle');
     const clockScaleInput = document.getElementById('clock-scale-slider');
-    const clockLiquidOpacityInput = document.getElementById('clock-liquid-opacity');
+    
+    // Calendar Appearance Inputs
+    const useGoogleCalendarToggle = document.getElementById('use-google-calendar-toggle');
+    const calendarThemeSelect = document.getElementById('calendar-theme-select');
+    const calFilterHueInput = document.getElementById('cal-filter-hue');
     
     // Toggle Inputs
     const toggleCalendar = document.getElementById('toggle-calendar');
@@ -62,6 +68,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const stocksWidget = document.getElementById('stocks-widget');
     const newsWidget = document.getElementById('news-widget');
     const newsFrame = document.getElementById('news-frame');
+    const newsPlaceholder = document.getElementById('news-placeholder');
     const stockSymbolInput = document.getElementById('stock-symbol');
     const newsUrlInput = document.getElementById('news-url');
 
@@ -69,12 +76,6 @@ document.addEventListener('DOMContentLoaded', () => {
     // Default images that always exist
     const defaultImages = [
         'Images/image1.jpeg'
-    ];
-
-    const presetColors = [
-        '#000000', '#ffffff', '#f44336', '#e91e63', '#9c27b0', '#673ab7', 
-        '#3f51b5', '#2196f3', '#03a9f4', '#00bcd4', '#009688', '#4caf50', 
-        '#8bc34a', '#cddc39', '#ffeb3b', '#ffc107', '#ff9800', '#ff5722'
     ];
 
     let settings = {
@@ -89,16 +90,21 @@ document.addEventListener('DOMContentLoaded', () => {
         timeColorMid: '#ffffff',
         timeColorEnd: '#ffffff',
         isTimeGradient: false,
-        isTimeLiquid: false,
         clockScale: '1',
-        clockLiquidOpacity: '0.5',
         fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif",
         isLiquidGlass: false,
         is24Hour: false,
         searchEngine: 'google',
-        calendarProvider: 'apple',
-        calendarMode: 'grid', // 'grid' or 'embed'
-        calendarUrl: '',
+        savedCalendars: [{
+            name: "Holidays in the United States",
+            code: '<iframe src="https://calendar.google.com/calendar/embed?src=en.usa%23holiday%40group.v.calendar.google.com&ctz=America%2FNew_York" style="border: 0" width="800" height="600" frameborder="0" scrolling="no"></iframe>'
+        }], 
+        activeCalendarIndex: 0,
+        useGoogleCalendar: true, // Toggle for Old (Grid) vs Embed
+        calendarTheme: 'light', // light, dark, custom
+        calendarFilters: {
+            hueRotate: 0,
+        },
         tempUnit: 'fahrenheit',
         stockSymbol: 'AAPL',
         newsUrl: '',
@@ -227,17 +233,10 @@ document.addEventListener('DOMContentLoaded', () => {
         document.documentElement.style.setProperty('--time-color', settings.timeColor);
         document.documentElement.style.setProperty('--clock-scale', settings.clockScale);
         
-        document.documentElement.style.setProperty('--clock-liquid-opacity', Math.max(0.05, (settings.clockLiquidOpacity || 0.5) * 0.5));
         // --- Clock Styling ---
-        if (settings.isTimeLiquid) {
-            timeDateContainer.classList.add('liquid-glass-clock');
-        } else {
-            timeDateContainer.classList.remove('liquid-glass-clock');
-        }
-
         const clockElements = [timeWidget, dateWidget, headerWeather];
         if (settings.isTimeGradient) {
-            const gradientStyle = `linear-gradient(to right, ${settings.timeColor}, ${settings.timeColorMid}, ${settings.timeColorEnd})`;
+            const gradientStyle = `linear-gradient(135deg, ${settings.timeColor}, ${settings.timeColorMid}, ${settings.timeColorEnd})`;
             clockElements.forEach(el => {
                 el.style.backgroundImage = gradientStyle;
                 el.style.webkitBackgroundClip = 'text';
@@ -258,11 +257,13 @@ document.addEventListener('DOMContentLoaded', () => {
         if (settings.isLiquidGlass) {
             widgets.forEach(w => w.classList.add('liquid-glass'));
             widgets.forEach(w => w.classList.remove('transparent-mode'));
+            searchInput.classList.add('liquid-glass');
             // Update liquid opacity based on widgetOpacity setting (mapping 0-1 to reasonable glass range)
             document.documentElement.style.setProperty('--liquid-opacity', Math.max(0.05, settings.widgetOpacity * 0.5));
         } else {
             widgets.forEach(w => w.classList.remove('liquid-glass'));
-            
+            searchInput.classList.remove('liquid-glass');
+
             // Transparent Mode (No border/shadow if opacity is 0)
             if (parseFloat(settings.widgetOpacity) === 0) {
                 widgets.forEach(w => w.classList.add('transparent-mode'));
@@ -285,6 +286,19 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         
+        // --- Calendar Styling ---
+        // Reset Widget Level Styles
+        calendarWidget.style.backgroundColor = '';
+        
+        const calContainer = document.getElementById('calendar-embed-container');
+        calContainer.className = ''; // Reset classes (keep 'hidden' logic separate below)
+        
+        if (settings.calendarTheme === 'dark') {
+            calContainer.classList.add('cal-theme-dark');
+        }
+        // Apply Hue Rotate Variable (used by both Light and Dark CSS)
+        calContainer.style.setProperty('--cal-hue', `${settings.calendarFilters.hueRotate}deg`);
+
         // Time
         updateTimeAndDate(); // Force update immediately
 
@@ -332,28 +346,54 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         // Update Calendar Mode
+        const hasActiveCalendar = settings.activeCalendarIndex >= 0 && 
+                                  settings.savedCalendars[settings.activeCalendarIndex];
+
         if (settings.showCalendar) {
-            if (settings.calendarMode === 'embed' && settings.calendarUrl) {
+            if (settings.useGoogleCalendar && hasActiveCalendar) {
                 calendarGridContainer.classList.add('hidden');
+                calendarWidget.classList.add('google-active');
                 calendarEmbedContainer.classList.remove('hidden');
-                if (calendarEmbedContainer.innerHTML.indexOf(settings.calendarUrl) === -1) {
-                     // Ensure clean slate before inject
-                     calendarEmbedContainer.innerHTML = '';
-                     if (settings.calendarUrl.trim().startsWith('<iframe')) {
-                         calendarEmbedContainer.innerHTML = settings.calendarUrl;
-                     } else if (settings.calendarUrl.trim().startsWith('http')) {
-                         // Try wrapping in iframe if just a URL
-                         calendarEmbedContainer.innerHTML = `<iframe src="${settings.calendarUrl}" style="width:100%; height:100%; border:0;"></iframe>`;
-                     }
+                
+                const activeCal = settings.savedCalendars[settings.activeCalendarIndex];
+                // Extract src if it's an iframe string, or verify it's valid
+                const rawCode = activeCal.code.trim();
+
+                // Prevent unnecessary re-rendering (flicker)
+                if (calendarEmbedContainer.getAttribute('data-embed-code') !== rawCode) {
+                    let codeToInject = rawCode;
+                    // Basic sanitization/check to ensure it renders in the container
+                    if (!codeToInject.includes('<iframe')) {
+                        // If user just pasted a URL by mistake, try to wrap it (though we instruct for Embed Code)
+                        codeToInject = `<iframe src="${codeToInject}" style="border: 0" width="800" height="600" frameborder="0" scrolling="no"></iframe>`;
+                    }
+                    // Force 100% width/height on the iframe
+                    codeToInject = codeToInject.replace(/width="[^"]*"/, 'width="100%"').replace(/height="[^"]*"/, 'height="100%"');
+                    // If styles exist, append or add
+                    if (codeToInject.includes('style="')) {
+                        codeToInject = codeToInject.replace('style="', 'style="width:100%; height:100%; ');
+                    } else {
+                         codeToInject = codeToInject.replace('<iframe', '<iframe style="width:100%; height:100%; border:0;"');
+                    }
+                    
+                    calendarEmbedContainer.innerHTML = codeToInject;
+                    calendarEmbedContainer.setAttribute('data-embed-code', rawCode);
                 }
             } else {
                 calendarGridContainer.classList.remove('hidden');
                 calendarEmbedContainer.classList.add('hidden');
+                calendarWidget.classList.remove('google-active');
             }
         }
         
-        if (settings.showNews && newsFrame.src !== settings.newsUrl) {
-             newsFrame.src = settings.newsUrl || "about:blank";
+        // News/Embed Content Logic
+        if (settings.newsUrl && settings.newsUrl.trim() !== "") {
+            newsPlaceholder.classList.add('hidden');
+            newsFrame.classList.remove('hidden');
+            if (newsFrame.src !== settings.newsUrl) newsFrame.src = settings.newsUrl;
+        } else {
+            newsPlaceholder.classList.remove('hidden');
+            newsFrame.classList.add('hidden');
         }
     }
 
@@ -365,6 +405,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (savedGlobal) {
             const parsed = JSON.parse(savedGlobal);
             if (parsed.customImages) settings.customImages = parsed.customImages;
+            if (parsed.savedCalendars) settings.savedCalendars = parsed.savedCalendars;
              settings = { ...settings, ...parsed };
         }
         if (savedProfiles) {
@@ -376,8 +417,8 @@ document.addEventListener('DOMContentLoaded', () => {
         syncInputs();
         
         
-        renderColorSwatches();
         renderBackgroundList();
+        renderCalendarList();
         applySettings();
         
         if(settings.showStocks) updateStockWidget();
@@ -388,16 +429,21 @@ document.addEventListener('DOMContentLoaded', () => {
         if (bgProfiles[imageUrl]) {
             const globalImages = settings.customImages;
             const globalBg = imageUrl; // Keep the requested image
+            const globalCalendars = settings.savedCalendars; // Keep shared calendars
+            
             // Merge defaults with saved profile to ensure new fields (like showWeather) exist
             settings = { ...settings, ...getDefaultProfile(), ...bgProfiles[imageUrl] };
             settings.customImages = globalImages; // Restore global images list
+            settings.savedCalendars = globalCalendars; // Restore global calendar list
             settings.bgImage = globalBg; // Ensure bgImage is set to the requested one
         } else {
             const globalImages = settings.customImages;
+            const globalCalendars = settings.savedCalendars;
             const newProfile = getDefaultProfile();
             newProfile.bgImage = imageUrl;
             settings = { ...settings, ...newProfile };
             settings.customImages = globalImages;
+            settings.savedCalendars = globalCalendars;
             settings.bgImage = imageUrl;
         }
     }
@@ -405,11 +451,13 @@ document.addEventListener('DOMContentLoaded', () => {
     function saveSettings() {
         const globalData = {
             customImages: settings.customImages,
-            bgImage: settings.bgImage
+            bgImage: settings.bgImage,
+            savedCalendars: settings.savedCalendars // Shared across all profiles
         };
         
         const currentProfile = { ...settings };
         delete currentProfile.customImages;
+        delete currentProfile.savedCalendars; // Don't save list in profile
         bgProfiles[settings.bgImage] = currentProfile;
 
         try {
@@ -431,22 +479,28 @@ document.addEventListener('DOMContentLoaded', () => {
         accentColorPicker.value = settings.accentColor;
         timeColorPicker.value = settings.timeColor;
         
+        if (settings.widgetColor === settings.widgetGradientColor && settings.widgetColor === settings.widgetColorMid) {
+            widgetSolidColorPicker.value = settings.widgetColor;
+        }
+        
         timeColorMidPicker.value = settings.timeColorMid || settings.timeColor;
         timeColorEndPicker.value = settings.timeColorEnd || settings.timeColor;
         widgetColorMidPicker.value = settings.widgetColorMid || settings.widgetColor;
         timeGradientToggle.checked = settings.isTimeGradient;
         clockScaleInput.value = settings.clockScale || 1;
-        timeLiquidToggle.checked = settings.isTimeLiquid;
-        clockLiquidOpacityInput.value = settings.clockLiquidOpacity || 0.5;
 
         widgetGradientPicker.value = settings.widgetGradientColor || settings.widgetColor;
         liquidGlassToggle.checked = settings.isLiquidGlass;
         timeFormatCheckbox.checked = settings.is24Hour;
         searchEngineSelect.value = settings.searchEngine;
-        calendarProviderSelect.value = settings.calendarProvider;
-        calendarModeSelect.value = settings.calendarMode;
-        calendarUrlInput.value = settings.calendarUrl;
         fontFamilySelect.value = settings.fontFamily;
+        
+        // Calendar Appearance Sync
+        useGoogleCalendarToggle.checked = settings.useGoogleCalendar;
+        calendarThemeSelect.value = settings.calendarTheme;
+        if (settings.calendarFilters) {
+            calFilterHueInput.value = settings.calendarFilters.hueRotate;
+        }
         
         toggleCalendar.checked = settings.showCalendar;
         toggleWeather.checked = settings.showWeather;
@@ -456,16 +510,6 @@ document.addEventListener('DOMContentLoaded', () => {
         stockSymbolInput.value = settings.stockSymbol;
         newsUrlInput.value = settings.newsUrl;
         tempUnitToggle.checked = settings.tempUnit === 'celsius';
-        
-        updateCalendarHelpTooltip();
-    }
-
-    function updateCalendarHelpTooltip() {
-        if (settings.calendarMode === 'embed') {
-             calendarHelpIcon.dataset.tooltip = "For Google Calendar: Go to Settings > 'Integrate calendar' and copy the full HTML 'Embed code'. Pasting a simple URL will not work. This feature is not supported for Apple Calendar.";
-             return;
-        }
-        calendarHelpIcon.dataset.tooltip = "This mode does not show events. Use 'Embed Widget' mode to see your calendar details.";
     }
 
     // --- New Widgets Logic ---
@@ -564,10 +608,109 @@ document.addEventListener('DOMContentLoaded', () => {
         return info;
     }
     
+    // --- Calendar List Logic ---
+    function renderCalendarList() {
+        calendarListContainer.innerHTML = '';
+        
+        if (!settings.savedCalendars) settings.savedCalendars = [];
+        
+        settings.savedCalendars.forEach((cal, index) => {
+            const item = document.createElement('div');
+            item.className = 'calendar-item';
+            if (index === settings.activeCalendarIndex) {
+                item.classList.add('active-calendar');
+            }
 
-    calendarUrlInput.addEventListener('change', (e) => {
-        settings.calendarUrl = e.target.value;
-        saveSettings();
+            // Delete Button (Top Right)
+            if (cal.name !== "Holidays in the United States") {
+                const deleteBtn = document.createElement('div');
+                deleteBtn.className = 'calendar-delete-btn';
+                deleteBtn.innerHTML = '&times;';
+                deleteBtn.onclick = (e) => {
+                    e.stopPropagation();
+                    if (confirm("Are you sure you want to delete this calendar?\n\nNOTE: This action cannot be undone.")) {
+                        settings.savedCalendars.splice(index, 1);
+                        // Adjust active index if needed
+                        if (index === settings.activeCalendarIndex) {
+                            settings.activeCalendarIndex = -1;
+                        } else if (index < settings.activeCalendarIndex) {
+                            settings.activeCalendarIndex--;
+                        }
+                        saveSettings();
+                        renderCalendarList();
+                    }
+                };
+                item.appendChild(deleteBtn);
+            }
+
+            // Name Display
+            const nameEl = document.createElement('div');
+            nameEl.className = 'calendar-name';
+            nameEl.textContent = cal.name || 'Untitled Calendar';
+            item.appendChild(nameEl);
+
+            // Use Button (Bottom)
+            const useBtn = document.createElement('button');
+            useBtn.className = 'calendar-use-btn';
+            useBtn.textContent = (index === settings.activeCalendarIndex) ? 'Active' : 'Use Calendar';
+            useBtn.disabled = (index === settings.activeCalendarIndex);
+            useBtn.onclick = () => {
+                settings.activeCalendarIndex = index;
+                saveSettings();
+                renderCalendarList();
+            };
+            item.appendChild(useBtn);
+
+            calendarListContainer.appendChild(item);
+        });
+    }
+
+    // Add Calendar Form Toggle
+    addCalendarBtn.addEventListener('click', () => {
+        addCalendarForm.classList.remove('hidden');
+        addCalendarBtn.classList.add('hidden');
+    });
+
+    // Add Calendar Action
+    document.getElementById('save-new-calendar').addEventListener('click', () => {
+        const nameInput = document.getElementById('new-calendar-name');
+        const codeInput = document.getElementById('new-calendar-code');
+        let name = nameInput.value.trim();
+        const code = codeInput.value.trim();
+
+        if (name && code) {
+            // Capitalize first letter
+            name = name.charAt(0).toUpperCase() + name.slice(1);
+            
+            // Check for duplicate names
+            if (settings.savedCalendars.some(c => c.name === name)) {
+                alert(`A calendar with the name "${name}" already exists. Please choose a different name.`);
+                return;
+            }
+            settings.savedCalendars.push({ name, code });
+            // Auto-select if it's the first one
+            if (settings.savedCalendars.length === 1) {
+                settings.activeCalendarIndex = 0;
+            }
+            saveSettings();
+            renderCalendarList();
+            
+            // Reset and hide form
+            nameInput.value = '';
+            codeInput.value = '';
+            addCalendarForm.classList.add('hidden');
+            addCalendarBtn.classList.remove('hidden');
+        } else {
+            alert("Please provide both a name and the embed code.");
+        }
+    });
+
+    // Cancel Add Action
+    document.getElementById('cancel-new-calendar').addEventListener('click', () => {
+        document.getElementById('new-calendar-name').value = '';
+        document.getElementById('new-calendar-code').value = '';
+        addCalendarForm.classList.add('hidden');
+        addCalendarBtn.classList.remove('hidden');
     });
     
     // --- Search Suggestions ---
@@ -621,32 +764,6 @@ document.addEventListener('DOMContentLoaded', () => {
     function hexToRgb(hex) {
         const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
         return result ? `${parseInt(result[1], 16)}, ${parseInt(result[2], 16)}, ${parseInt(result[3], 16)}` : null;
-    }
-
-    function renderColorSwatches() {
-        widgetColorSwatches.innerHTML = '';
-        presetColors.forEach(color => {
-            const swatch = document.createElement('div');
-            swatch.className = 'color-swatch';
-            swatch.style.backgroundColor = color;
-            swatch.dataset.color = color;
-            if (color.toLowerCase() === settings.widgetColor.toLowerCase()) {
-                swatch.classList.add('selected');
-            }
-            swatch.addEventListener('click', () => {
-                settings.widgetColor = color;
-                // If using solid color, sync gradient too so it's solid
-                settings.widgetGradientColor = color;
-                settings.widgetColorMid = color;
-                
-                widgetColorPicker.value = color; // Sync color wheel
-                widgetGradientPicker.value = color;
-                widgetColorMidPicker.value = color;
-                saveSettings();
-                renderColorSwatches(); // Re-render to update selection
-            });
-            widgetColorSwatches.appendChild(swatch);
-        });
     }
 
     // --- Background List Logic ---
@@ -871,7 +988,18 @@ document.addEventListener('DOMContentLoaded', () => {
     widgetColorPicker.addEventListener('input', (e) => {
         settings.widgetColor = e.target.value;
         saveSettings();
-        renderColorSwatches(); // Re-render to update selection on swatches
+    });
+    widgetSolidColorPicker.addEventListener('input', (e) => {
+        const color = e.target.value;
+        settings.widgetColor = color;
+        settings.widgetColorMid = color;
+        settings.widgetGradientColor = color;
+        
+        widgetColorPicker.value = color;
+        widgetColorMidPicker.value = color;
+        widgetGradientPicker.value = color;
+        
+        saveSettings();
     });
     widgetColorMidPicker.addEventListener('input', (e) => { settings.widgetColorMid = e.target.value; saveSettings(); });
     accentColorPicker.addEventListener('input', (e) => { settings.accentColor = e.target.value; saveSettings(); });
@@ -880,9 +1008,7 @@ document.addEventListener('DOMContentLoaded', () => {
     timeColorMidPicker.addEventListener('input', (e) => { settings.timeColorMid = e.target.value; saveSettings(); });
     timeColorEndPicker.addEventListener('input', (e) => { settings.timeColorEnd = e.target.value; saveSettings(); });
     timeGradientToggle.addEventListener('change', (e) => { settings.isTimeGradient = e.target.checked; saveSettings(); });
-    timeLiquidToggle.addEventListener('change', (e) => { settings.isTimeLiquid = e.target.checked; saveSettings(); });
     clockScaleInput.addEventListener('input', (e) => { settings.clockScale = e.target.value; saveSettings(); });
-    clockLiquidOpacityInput.addEventListener('input', (e) => { settings.clockLiquidOpacity = e.target.value; saveSettings(); });
     
     widgetGradientPicker.addEventListener('input', (e) => {
         settings.widgetGradientColor = e.target.value;
@@ -892,16 +1018,6 @@ document.addEventListener('DOMContentLoaded', () => {
     timeFormatCheckbox.addEventListener('change', (e) => { settings.is24Hour = e.target.checked; saveSettings(); });
     tempUnitToggle.addEventListener('change', (e) => { settings.tempUnit = e.target.checked ? 'celsius' : 'fahrenheit'; updateWeatherWidget(); saveSettings(); });
     searchEngineSelect.addEventListener('change', (e) => { settings.searchEngine = e.target.value; saveSettings(); });
-    calendarProviderSelect.addEventListener('change', (e) => {
-        settings.calendarProvider = e.target.value;
-        updateCalendarHelpTooltip();
-        saveSettings();
-    });
-    calendarModeSelect.addEventListener('change', (e) => { 
-        settings.calendarMode = e.target.value; 
-        updateCalendarHelpTooltip(); 
-        saveSettings(); 
-    });
     fontFamilySelect.addEventListener('change', (e) => { settings.fontFamily = e.target.value; saveSettings(); });
     
     // Widget Toggles
@@ -912,6 +1028,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
     stockSymbolInput.addEventListener('change', (e) => { settings.stockSymbol = e.target.value; updateStockWidget(); saveSettings(); });
     newsUrlInput.addEventListener('change', (e) => { settings.newsUrl = e.target.value; saveSettings(); });
+
+    // Calendar Appearance Events
+    useGoogleCalendarToggle.addEventListener('change', (e) => { settings.useGoogleCalendar = e.target.checked; saveSettings(); });
+    calendarThemeSelect.addEventListener('change', (e) => { settings.calendarTheme = e.target.value; saveSettings(); });
+    calFilterHueInput.addEventListener('input', (e) => { settings.calendarFilters.hueRotate = e.target.value; saveSettings(); });
 
     // Initialize
     loadSettings();

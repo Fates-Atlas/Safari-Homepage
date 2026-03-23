@@ -90,19 +90,6 @@ body {
     box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
 }
 
-/* Liquid Glass Effect for Clock */
-.liquid-glass-clock {
-    background: rgba(255, 255, 255, var(--clock-liquid-opacity, 0.05));
-    backdrop-filter: blur(40px) saturate(180%); /* Increased blur/saturation for Apple look */
-    -webkit-backdrop-filter: blur(40px) saturate(180%);
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.2);
-    padding: 20px 40px;
-    border-radius: 20px;
-    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); /* Subtle text shadow for legibility */
-    font-weight: 500; /* Slightly cleaner weight inside glass */
-}
-
 /* --- Time & Date Section (No Background) --- */
 #time-date-container {
     display: flex;
@@ -156,6 +143,15 @@ body {
     padding: 0 10px;
 }
 
+/* When Google Calendar is active, remove default widget styling (blur, bg, border) */
+#calendar-widget.google-active {
+    backdrop-filter: none !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    padding: 0 !important; /* Remove padding so iframe fills the widget size */
+}
+
 .calendar-grid {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
@@ -205,7 +201,22 @@ body {
     min-height: 300px;
     border-radius: 5px;
     overflow: hidden;
+    background: white; /* Default background for iframe area */
+    transition: background-color 0.3s;
 }
+
+/* Dark Theme for Calendar Embed */
+.cal-theme-dark iframe {
+    /* Invert for dark mode + User defined hue rotation */
+    filter: invert(0.92) hue-rotate(calc(180deg + var(--cal-hue, 0deg)));
+}
+
+/* Light Theme (Default) with user Hue */
+#calendar-embed-container:not(.cal-theme-dark) iframe {
+    filter: hue-rotate(var(--cal-hue, 0deg));
+}
+
+/* Ensure Embed container handles rounding/overflow correctly */
 #calendar-embed-container iframe {
     width: 100%;
     height: 100%;
@@ -225,14 +236,15 @@ body {
     padding: 15px 25px;
     font-size: 1.1em;
     border-radius: 30px; /* Pill shape */
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.1);
     width: 450px;
     max-width: 90%;
-    background: rgba(255, 255, 255, 0.2); /* Glassmorphism */
-    backdrop-filter: blur(10px);
+    background: var(--glass-bg); /* Use widget background */
+    backdrop-filter: blur(5px);
     color: white;
     outline: none;
-    transition: all 0.3s ease;
+    transition: background 0.3s ease, backdrop-filter 0.3s ease, box-shadow 0.3s ease, width 0.3s ease;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 #search-input::placeholder {
@@ -240,9 +252,16 @@ body {
 }
 
 #search-input:focus {
-    background: rgba(255, 255, 255, 0.3);
     width: 500px; /* Slight expand on focus */
     box-shadow: 0 0 15px rgba(0,0,0,0.2);
+}
+
+/* Liquid Glass Effect for Search Bar */
+#search-input.liquid-glass {
+    background: rgba(255, 255, 255, var(--liquid-opacity, 0.05)) !important;
+    backdrop-filter: blur(25px) saturate(180%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.3);
 }
 
 /* Search Suggestions */
@@ -469,30 +488,6 @@ input[type="color"]::-webkit-color-swatch {
     margin-top: 5px;
 }
 
-/* --- Color Swatches --- */
-#widget-color-swatches {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    margin-top: 15px;
-    justify-content: flex-start;
-}
-.color-swatch {
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    cursor: pointer;
-    border: 2px solid transparent;
-    transition: transform 0.2s, border-color 0.2s;
-}
-
-.color-swatch:hover {
-    transform: scale(1.15);
-}
-.color-swatch.selected {
-    border-color: var(--accent-color);
-}
-
 /* --- Background Edit Mode --- */
 #bg-list.edit-mode .bg-option.add-new {
     display: none; /* Hide '+' button in edit mode */
@@ -543,60 +538,55 @@ input[type="color"]::-webkit-color-swatch {
 
 /* --- Help/Info Icons --- */
 .help-icon {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
     width: 14px;
     height: 14px;
     border-radius: 50%;
     border: 1px solid #888;
     color: #888;
-    text-align: center;
     font-size: 10px;
-    line-height: 14px;
     cursor: help;
     position: relative;
+    flex-shrink: 0;
 }
 .help-icon:hover::after {
     content: attr(data-tooltip);
     position: absolute;
-    bottom: 100%; /* Position above the setting line */
-    right: 0; /* Align to the right edge of the setting div */
+    right: 25px; /* Position to the left of the icon */
+    top: 50%;
+    transform: translateY(-50%);
     margin-bottom: 5px;
     background: #000;
     color: #fff;
     padding: 8px;
     border-radius: 5px;
-    width: max-content;
-    max-width: 300px; /* Widened max-width */
-    min-width: 200px; /* Ensure it's not too skinny */
+    width: 150px; /* Reduced width to prevent cutoff */
+    max-width: 150px;
     font-size: 0.9em;
     z-index: 100;
     text-align: left;
     white-space: normal; /* Allow text wrapping */
+    box-shadow: 0 4px 10px rgba(0,0,0,0.5);
+}
+/* Flip tooltip to the right for elements near the left edge */
+.help-icon.tooltip-right:hover::after {
+    right: auto;
+    left: 25px;
 }
 
 /* --- Scrollbar Styling --- */
 
-/* Firefox */
+/* Hide Scrollbars Globally */
 * {
-    scrollbar-width: thin;
-    scrollbar-color: var(--accent-color) transparent;
+    -ms-overflow-style: none;  /* IE and Edge */
+    scrollbar-width: none;  /* Firefox */
+    box-sizing: border-box; /* Fixes width/padding sizing issues globally */
 }
 
-/* Webkit (Chrome, Safari) */
 *::-webkit-scrollbar {
-    width: 12px;
-    height: 12px;
-}
-
-*::-webkit-scrollbar-track {
-    background: transparent; /* Make track invisible */
-}
-
-*::-webkit-scrollbar-thumb {
-    background-color: var(--accent-color);
-    border-radius: 20px;
-    border: 3px solid rgba(20, 20, 20, 0.8);
-    background-clip: padding-box;
+    display: none;
 }
 
 /* --- New Widgets --- */
@@ -622,8 +612,21 @@ input[type="color"]::-webkit-color-swatch {
 #news-widget {
     /* Default State: Bottom row, full width */
     grid-column: 1 / -1; 
-    min-height: 600px;
+    min-height: 450px; /* Shrinked by 25% from 600px */
     max-height: none;
+    overflow: hidden; /* Ensure zoomed content doesn't overflow corners */
+}
+
+#news-placeholder {
+    text-align: center;
+    padding: 20px;
+    font-size: 1.1em;
+    color: rgba(255, 255, 255, 0.8);
+}
+
+#news-frame {
+    width: 100%; 
+    height: 100%;
 }
 
 /* Dynamic State: Half width (sits next to Calendar or Stocks) */
@@ -633,6 +636,14 @@ input[type="color"]::-webkit-color-swatch {
     max-height: 400px;
 }
 
+/* When half-width, zoom out the iframe to fit content better */
+#news-widget.news-half-width #news-frame {
+    width: 142.85%; /* 100 / 0.7 = ~142.85 */
+    height: 142.85%;
+    transform: scale(0.7);
+    transform-origin: 0 0;
+}
+
 /* Dynamic State: Solo (Double Height) */
 #news-widget.news-solo-mode {
     grid-column: 1 / -1;
@@ -640,4 +651,94 @@ input[type="color"]::-webkit-color-swatch {
 }
 #calendar-widget, #stocks-widget {
     grid-column: span 1;
+}
+
+/* --- Calendar Settings UI --- */
+.calendar-list-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 10px;
+}
+
+.calendar-item {
+    position: relative;
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.calendar-item.active-calendar {
+    border-color: var(--accent-color);
+    background: rgba(66, 133, 244, 0.15);
+}
+
+.calendar-name {
+    font-weight: bold;
+    font-size: 1em;
+    margin-right: 20px; /* Space for delete button */
+}
+
+.calendar-use-btn {
+    background: rgba(255, 255, 255, 0.2);
+    border: none;
+    color: white;
+    padding: 5px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8em;
+    transition: background 0.2s;
+}
+.calendar-use-btn:hover:not(:disabled) {
+    background: var(--accent-color);
+}
+.calendar-use-btn:disabled {
+    opacity: 1;
+    cursor: default;
+    background: var(--accent-color);
+    box-shadow: 0 0 8px var(--accent-color); /* Glow effect for active button */
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    font-weight: bold;
+}
+
+.calendar-delete-btn {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    width: 20px;
+    height: 20px;
+    background: rgba(0,0,0,0.3);
+    color: #ff6b6b;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 16px;
+    line-height: 1;
+}
+.calendar-delete-btn:hover {
+    background: #ff6b6b;
+    color: white;
+}
+
+.add-calendar-trigger {
+    width: 100%;
+    padding: 10px;
+    background: rgba(255,255,255,0.1);
+    border: 1px dashed rgba(255,255,255,0.3);
+    text-align: center;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: bold;
+    transition: background 0.2s;
+    margin-bottom: 15px; /* Prevent cutting off element below */
+}
+.add-calendar-trigger:hover {
+    background: rgba(255,255,255,0.2);
 }
