@@ -636,14 +636,6 @@ input[type="color"]::-webkit-color-swatch {
     max-height: 400px;
 }
 
-/* When half-width, zoom out the iframe to fit content better */
-#news-widget.news-half-width #news-frame {
-    width: 142.85%; /* 100 / 0.7 = ~142.85 */
-    height: 142.85%;
-    transform: scale(0.7);
-    transform-origin: 0 0;
-}
-
 /* Dynamic State: Solo (Double Height) */
 #news-widget.news-solo-mode {
     grid-column: 1 / -1;

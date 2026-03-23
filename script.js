@@ -1036,4 +1036,44 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initialize
     loadSettings();
+
+    // --- Window Resize Handling ---
+    let resizeTimer;
+    window.addEventListener('resize', () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(() => {
+            // Re-initialize Stocks widget to adjust to new width
+            if (settings.showStocks) updateStockWidget();
+
+            // Re-render Base Calendar
+            if (settings.showCalendar && !settings.useGoogleCalendar) {
+                renderCalendar();
+            }
+
+            // Reload Google Calendar Iframe if active
+            if (settings.showCalendar && settings.useGoogleCalendar) {
+                const activeCal = settings.savedCalendars[settings.activeCalendarIndex];
+                if (activeCal) {
+                    let codeToInject = activeCal.code.trim();
+                    if (!codeToInject.includes('<iframe')) {
+                        codeToInject = `<iframe src="${codeToInject}" style="border: 0" width="800" height="600" frameborder="0" scrolling="no"></iframe>`;
+                    }
+                    codeToInject = codeToInject.replace(/width="[^"]*"/, 'width="100%"').replace(/height="[^"]*"/, 'height="100%"');
+                    if (codeToInject.includes('style="')) {
+                        codeToInject = codeToInject.replace('style="', 'style="width:100%; height:100%; ');
+                    } else {
+                         codeToInject = codeToInject.replace('<iframe', '<iframe style="width:100%; height:100%; border:0;"');
+                    }
+                    calendarEmbedContainer.innerHTML = codeToInject;
+                }
+            }
+
+            // Reload Embed Website Iframe if active
+            if (settings.showNews && settings.newsUrl) {
+                if (newsFrame && !newsFrame.classList.contains('hidden')) {
+                    newsFrame.src = newsFrame.src;
+                }
+            }
+        }, 300);
+    });
 });
