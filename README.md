@@ -47,7 +47,7 @@ You can use the hosted version of this dashboard at:
     `https://fates-atlas.github.io/Safari-Homepage/`
 
 ### Google Chrome
-1.  Install the New Tab Redirect [extension] (https://chromewebstore.google.com/detail/new-tab-redirect/icpgjfneehieebagbmdbhnlpiopdcmna).
+1.  Install the New Tab Redirect [extension](https://chromewebstore.google.com/detail/new-tab-redirect/icpgjfneehieebagbmdbhnlpiopdcmna).
 2.  Click the extension icon and go to **Extension Options**.
 3.  Paste the link above into the URL box and save.
 
