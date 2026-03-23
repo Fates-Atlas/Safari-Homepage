@@ -75,11 +75,11 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- State Management ---
     // Default images that always exist
     const defaultImages = [
-        'Images/image1.jpeg'
+        'Images/image1.webp'
     ];
 
     let settings = {
-        bgImage: 'url("Images/image1.jpeg")',
+        bgImage: 'url("Images/image1.webp")',
         bgBlur: '0',
         widgetOpacity: '0.5',
         accentColor: '#4285F4',
@@ -467,9 +467,11 @@ document.addEventListener('DOMContentLoaded', () => {
             if (e.name === 'QuotaExceededError') {
                 alert("Storage full.");
             }
+            return false; // Indicate failure
         } finally {
             applySettings();
         }
+        return true; // Indicate success
     }
 
     function syncInputs() {
@@ -578,7 +580,7 @@ document.addEventListener('DOMContentLoaded', () => {
         
         symbols.forEach(symbol => {
             const wrapper = document.createElement('div');
-            wrapper.style.minHeight = "150px"; // Ensure height for vertical stack
+            wrapper.style.height = "126px";
             const script = document.createElement('script');
             script.src = 'https://s3.tradingview.com/external-embedding/embed-widget-single-quote.js';
             script.async = true;
@@ -973,13 +975,17 @@ document.addEventListener('DOMContentLoaded', () => {
         // Set as current
         settings.bgImage = imageStr;
         
-        // Clear inputs
-        customUrlInput.value = '';
-        fileUploadInput.value = '';
-        customBgInputContainer.classList.add('hidden');
-
-        renderBackgroundList();
-        saveSettings();
+        // Try saving. If storage is full, revert.
+        if (!saveSettings()) {
+            loadSettings(); // Reloads previous state from disk, undoing the change in memory
+            alert("Storage full. Image not added. Please delete existing images or use a URL.");
+        } else {
+            // Success: Clear inputs and update UI
+            customUrlInput.value = '';
+            fileUploadInput.value = '';
+            customBgInputContainer.classList.add('hidden');
+            renderBackgroundList();
+        }
     }
 
     // --- Event Listeners for Inputs ---
