@@ -47,7 +47,7 @@ You can use the hosted version of this dashboard at:
     `https://fates-atlas.github.io/Safari-Homepage/`
 
 ### Google Chrome
-1.  Install the New Tab Redirect extension.
+1.  Install the New Tab Redirect [extension] (https://chromewebstore.google.com/detail/new-tab-redirect/icpgjfneehieebagbmdbhnlpiopdcmna).
 2.  Click the extension icon and go to **Extension Options**.
 3.  Paste the link above into the URL box and save.
 
@@ -110,4 +110,3 @@ To display your actual Google Calendar events inside the widget:
 * **Frontend**: HTML5, CSS3 (Custom Properties/Variables), Vanilla JavaScript
 * **APIs**: [OpenWeatherMap](https://openweathermap.org/) (Weather), [TradingView](https://www.tradingview.com/) (Stocks)
 * **Storage**: Browser `localStorage` API
----
