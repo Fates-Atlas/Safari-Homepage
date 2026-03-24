@@ -82,6 +82,10 @@ Since this dashboard runs entirely in your browser without a backend server, ima
 4.  **Option A (Best)**: Paste a direct link (URL) to an image found online.
 5.  **Option B**: Upload a file from your computer (Automatic compression is applied, but space is limited).
 
+> **Background Profiles:** Dashboard settings (like colors, widget visibility, and themes) are saved specifically to the background image you are using.
+> *   **Switching:** Loading a saved image restores its unique settings.
+> *   **Creating New:** Adding a new background inherits your current settings but they can be later changed without affecting your other background settings. 
+
 ### 2. Google Calendar Integration
 To display your actual Google Calendar events inside the widget:
 
